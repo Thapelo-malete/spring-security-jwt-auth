@@ -18,11 +18,11 @@ public class JwtService {
     @Value("${jwt.secret}")
     private String secretKey;
 
-    private String generateToken(UserDetails userDetails) {
+    public String generateToken(UserDetails userDetails) {
         return Jwts.builder().setSubject(userDetails.getUsername())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 *60*24))
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .signWith(SignatureAlgorithm.HS256, secretKey)
+                .signWith(SignatureAlgorithm.HS256, getSignInKey())
                 .compact();
     }
 
@@ -30,10 +30,10 @@ public class JwtService {
         return extractClaim(token, Claims::getSubject);
     }
 
-//    private Key getSignInKey() {
-//        byte[] key = Decoders.BASE64.decode(secretKey);
-//        return Keys.hmacShaKeyFor(key);
-//    }
+    private Key getSignInKey() {
+        byte[] key = Decoders.BASE64.decode(secretKey);
+        return Keys.hmacShaKeyFor(key);
+    }
 
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaimsFromToken(token);
